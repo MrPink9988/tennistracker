@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,28 +13,17 @@
     h1 {
       text-align: center;
     }
-    .tracker {
-      display: flex;
-      flex-direction: row;
-      overflow-x: auto;
-    }
-    .dates-column {
-      min-width: 150px;
-    }
-    .dates-column input {
-      width: 100%;
-      margin-bottom: 5px;
-      padding: 5px;
-    }
     table {
       border-collapse: collapse;
-      margin-left: 20px;
+      width: 100%;
+      margin-top: 20px;
+      overflow-x: auto;
     }
     th, td {
       border: 1px solid #ccc;
       padding: 6px;
       text-align: center;
-      min-width: 80px;
+      min-width: 60px;
     }
     button.participated {
       background-color: #4caf50;
@@ -57,17 +45,15 @@
       margin-top: 20px;
       font-weight: bold;
     }
+    .add-date-button {
+      margin-top: 10px;
+    }
 
     @media (max-width: 600px) {
       th, td {
         padding: 4px;
         font-size: 12px;
         min-width: 50px;
-      }
-
-      .dates-column input {
-        padding: 4px;
-        font-size: 12px;
       }
 
       button {
@@ -83,14 +69,20 @@
 </head>
 <body>
   <h1>Tennis Tracker</h1>
-  <div class="tracker">
-    <div class="dates-column">
-      <h3>Enter Dates</h3>
-      <div id="dateInputs"></div>
-      <button onclick="addDateInput()">+ Add Date</button>
-    </div>
-    <div id="table-container"></div>
+  <div style="overflow-x: auto;">
+    <table id="trackerTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>V</th>
+          <th>S</th>
+          <th>F</th>
+        </tr>
+      </thead>
+      <tbody id="trackerBody"></tbody>
+    </table>
   </div>
+  <button class="add-date-button" onclick="addDateRow()">+ Add Date</button>
   <div class="counts" id="counts"></div>
 
   <script>
@@ -103,23 +95,40 @@
       localStorage.setItem("tennis_participation", JSON.stringify(participation));
     }
 
-    function addDateInput(value = "") {
-      const container = document.getElementById("dateInputs");
+    function addDateRow(value = "") {
+      const tableBody = document.getElementById("trackerBody");
+      const tr = document.createElement("tr");
+
+      const dateTd = document.createElement("td");
       const input = document.createElement("input");
       input.type = "date";
       input.value = value;
       input.onchange = () => {
-        const inputDates = Array.from(container.querySelectorAll("input"))
-          .map(i => i.value)
-          .filter(d => d !== "");
-        dates = [...new Set(inputDates)].sort();
+        const allInputs = Array.from(document.querySelectorAll("tbody input[type='date']"));
+        dates = allInputs.map(i => i.value).filter(v => v !== "").sort();
         saveData();
         renderTable();
       };
-      container.appendChild(input);
+      dateTd.appendChild(input);
+      tr.appendChild(dateTd);
+
+      kids.forEach(kid => {
+        const cell = document.createElement("td");
+        const date = value;
+        const participated = participation[date] && participation[date][kid];
+        const btn = document.createElement("button");
+        btn.className = participated ? "participated" : "not-participated";
+        btn.innerText = participated ? "✔" : "—";
+        btn.onclick = () => toggleParticipation(date, kid);
+        cell.appendChild(btn);
+        tr.appendChild(cell);
+      });
+
+      tableBody.appendChild(tr);
     }
 
     function toggleParticipation(date, kid) {
+      if (!date) return;
       participation[date] = participation[date] || {};
       participation[date][kid] = !participation[date][kid];
       saveData();
@@ -127,36 +136,9 @@
     }
 
     function renderTable() {
-      const container = document.getElementById("table-container");
-      const table = document.createElement("table");
-
-      const thead = document.createElement("thead");
-      const headRow = document.createElement("tr");
-      headRow.innerHTML = "<th>Date</th>" + kids.map(kid => `<th>${kid[0]}</th>`).join("");
-      thead.appendChild(headRow);
-      table.appendChild(thead);
-
-      const tbody = document.createElement("tbody");
-
-      dates.forEach(date => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${date}</td>`;
-        kids.forEach(kid => {
-          const participated = participation[date] && participation[date][kid];
-          const btn = document.createElement("button");
-          btn.className = participated ? "participated" : "not-participated";
-          btn.innerText = participated ? "✔" : "—";
-          btn.onclick = () => toggleParticipation(date, kid);
-          const cell = document.createElement("td");
-          cell.appendChild(btn);
-          row.appendChild(cell);
-        });
-        tbody.appendChild(row);
-      });
-
-      table.appendChild(tbody);
-      container.innerHTML = "";
-      container.appendChild(table);
+      const tableBody = document.getElementById("trackerBody");
+      tableBody.innerHTML = "";
+      dates.forEach(date => addDateRow(date));
       renderCounts();
     }
 
@@ -164,7 +146,7 @@
       const counts = {};
       kids.forEach(kid => (counts[kid] = {}));
       for (const [date, record] of Object.entries(participation)) {
-        const month = date.slice(0, 7); // yyyy-mm
+        const month = date.slice(0, 7);
         kids.forEach(kid => {
           if (record[kid]) {
             counts[kid][month] = (counts[kid][month] || 0) + 1;
@@ -182,8 +164,8 @@
     }
 
     // Initial load
-    dates.forEach(date => addDateInput(date));
-    renderTable();
+    dates.forEach(date => addDateRow(date));
+    renderCounts();
   </script>
 </body>
 </html>
