@@ -48,19 +48,16 @@
     .add-date-button {
       margin-top: 10px;
     }
-
     @media (max-width: 600px) {
       th, td {
         padding: 4px;
         font-size: 12px;
         min-width: 50px;
       }
-
       button {
         padding: 4px;
         font-size: 12px;
       }
-
       table, th, td {
         border: none;
       }
@@ -87,7 +84,12 @@
 
   <script>
     const kids = ["Valentin", "Sebas", "Felix"];
-    let dates = JSON.parse(localStorage.getItem("tennis_dates") || "[]");
+    let dates = ["2025-07-02", "2025-07-09", "2025-07-16", "2025-07-23", "2025-07-30",
+                 "2025-08-06", "2025-08-13", "2025-08-20", "2025-08-27",
+                 "2025-09-03", "2025-09-10", "2025-09-17", "2025-09-24",
+                 "2025-10-01", "2025-10-08", "2025-10-15", "2025-10-22", "2025-10-29",
+                 "2025-11-05", "2025-11-12", "2025-11-19", "2025-11-26",
+                 "2025-12-03", "2025-12-10", "2025-12-17", "2025-12-24", "2025-12-31"];
     let participation = JSON.parse(localStorage.getItem("tennis_participation") || "{}");
 
     function saveData() {
@@ -164,8 +166,7 @@
     }
 
     // Initial load
-    dates.forEach(date => addDateRow(date));
-    renderCounts();
+    renderTable();
   </script>
 </body>
 </html>
