@@ -19,6 +19,7 @@
       margin-bottom: 20px;
       color: #fff;
       text-shadow: 0 0 10px #000;
+      font-size: 2em;
     }
 
     table {
@@ -51,11 +52,11 @@
       border-radius: 4px;
       padding: 8px 10px;
       cursor: pointer;
-      margin: 5px;
       background-color: #ccff00; /* Tennis ball yellow-green */
       color: #000;
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      text-align: center;
     }
 
     button.selected {
@@ -84,13 +85,19 @@
     }
 
     .button-grid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
       gap: 10px;
     }
 
+    .button-grid.kids {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .button-grid.years {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     .button-grid.months {
-      display: grid;
       grid-template-columns: repeat(3, 1fr);
     }
 
@@ -104,15 +111,11 @@
         font-size: 12px;
         padding: 6px 8px;
       }
-
-      .button-grid.months {
-        grid-template-columns: repeat(3, 1fr);
-      }
     }
   </style>
 </head>
 <body>
-  <h1>Tennis Tracker</h1>
+  <h1>🎾 Tennis Tracker 🎾</h1>
 
   <div style="overflow-x: auto;">
     <table id="trackerTable">
@@ -131,9 +134,9 @@
 
   <div class="summary-controls">
     <h3>Select Name</h3>
-    <div id="kidButtons" class="button-grid"></div>
+    <div id="kidButtons" class="button-grid kids"></div>
     <h3>Select Year</h3>
-    <div id="yearButtons" class="button-grid"></div>
+    <div id="yearButtons" class="button-grid years"></div>
     <h3>Select Month</h3>
     <div id="monthButtons" class="button-grid months"></div>
     <div class="summary-output" id="summaryOutput">No selection made.</div>
@@ -261,7 +264,7 @@
     // Initialize
     renderTable();
     createButtons("kidButtons", kids, "kid");
-    createButtons("yearButtons", ["2025", "2026"], "year");
+    createButtons("yearButtons", ["2025", "2026", "2027"], "year");
     createButtons("monthButtons", ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "month");
   </script>
 </body>
