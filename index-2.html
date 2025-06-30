@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tennis Tracker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+    }
+    .tracker {
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+    }
+    .dates-column {
+      min-width: 150px;
+    }
+    .dates-column input {
+      width: 100%;
+      margin-bottom: 5px;
+      padding: 5px;
+    }
+    table {
+      border-collapse: collapse;
+      margin-left: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+      min-width: 80px;
+    }
+    button.participated {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px;
+      cursor: pointer;
+    }
+    button.not-participated {
+      background-color: #ddd;
+      color: #333;
+      border: none;
+      border-radius: 4px;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .counts {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tennis Tracker</h1>
+  <div class="tracker">
+    <div class="dates-column">
+      <h3>Enter Dates</h3>
+      <div id="dateInputs"></div>
+      <button onclick="addDateInput()">+ Add Date</button>
+    </div>
+    <div id="table-container"></div>
+  </div>
+  <div class="counts" id="counts"></div>
+
+  <script>
+    const kids = ["Valentin", "Sebas", "Felix"];
+    let dates = JSON.parse(localStorage.getItem("tennis_dates") || "[]");
+    let participation = JSON.parse(localStorage.getItem("tennis_participation") || "{}");
+
+    function saveData() {
+      localStorage.setItem("tennis_dates", JSON.stringify(dates));
+      localStorage.setItem("tennis_participation", JSON.stringify(participation));
+    }
+
+    function addDateInput(value = "") {
+      const container = document.getElementById("dateInputs");
+      const input = document.createElement("input");
+      input.type = "date";
+      input.value = value;
+      input.onchange = () => {
+        const inputDates = Array.from(container.querySelectorAll("input"))
+          .map(i => i.value)
+          .filter(d => d !== "");
+        dates = [...new Set(inputDates)].sort();
+        saveData();
+        renderTable();
+      };
+      container.appendChild(input);
+    }
+
+    function toggleParticipation(date, kid) {
+      participation[date] = participation[date] || {};
+      participation[date][kid] = !participation[date][kid];
+      saveData();
+      renderTable();
+    }
+
+    function renderTable() {
+      const container = document.getElementById("table-container");
+      const table = document.createElement("table");
+
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.innerHTML = "<th>Date</th>" + kids.map(kid => `<th>${kid}</th>`).join("");
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+
+      dates.forEach(date => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${date}</td>`;
+        kids.forEach(kid => {
+          const participated = participation[date] && participation[date][kid];
+          const btn = document.createElement("button");
+          btn.className = participated ? "participated" : "not-participated";
+          btn.innerText = participated ? "✔" : "—";
+          btn.onclick = () => toggleParticipation(date, kid);
+          const cell = document.createElement("td");
+          cell.appendChild(btn);
+          row.appendChild(cell);
+        });
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      container.innerHTML = "";
+      container.appendChild(table);
+      renderCounts();
+    }
+
+    function renderCounts() {
+      const counts = {};
+      kids.forEach(kid => (counts[kid] = {}));
+      for (const [date, record] of Object.entries(participation)) {
+        const month = date.slice(0, 7); // yyyy-mm
+        kids.forEach(kid => {
+          if (record[kid]) {
+            counts[kid][month] = (counts[kid][month] || 0) + 1;
+          }
+        });
+      }
+
+      const lines = [];
+      for (const kid of kids) {
+        for (const month of Object.keys(counts[kid]).sort()) {
+          lines.push(`${kid} in ${month}: ${counts[kid][month]}x`);
+        }
+      }
+      document.getElementById("counts").innerText = lines.join(" | ");
+    }
+
+    // Initial load
+    dates.forEach(date => addDateInput(date));
+    renderTable();
+  </script>
+</body>
+</html>
