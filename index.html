@@ -3,85 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tennis Tracker</title>
+  <title>🎾 Tennis Tracker 🎾</title>
   <style>
+    :root {
+      --primary: #ccff00;
+      --primary-dark: #a3e635;
+      --bg-overlay: rgba(0, 0, 0, 0.6);
+      --glass-bg: rgba(255, 255, 255, 0.15);
+    }
+
     body {
-      font-family: sans-serif;
-      padding: 20px;
       margin: 0;
+      font-family: 'Segoe UI', sans-serif;
       background: url('background.png') no-repeat center center fixed;
       background-size: cover;
       color: #fff;
+      padding: 20px;
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 20px;
-      color: #fff;
+      font-size: 2.2em;
       text-shadow: 0 0 10px #000;
-      font-size: 2em;
+      margin-bottom: 20px;
     }
 
     table {
-      border-collapse: collapse;
       width: 100%;
+      border-collapse: collapse;
       margin-top: 20px;
-      background-color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.9);
       color: #000;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 1;
     }
 
     th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
+      padding: 8px;
       text-align: center;
-      min-width: 60px;
+      border-bottom: 1px solid #ccc;
     }
 
-    button.participated {
+    button {
+      background-color: var(--primary);
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+      transform: scale(1.02);
+    }
+
+    button.selected {
+      box-shadow: 0 0 10px white;
+      background-color: var(--primary-dark);
+    }
+
+    .participated {
       background-color: #4caf50;
       color: white;
     }
 
-    button.not-participated {
+    .not-participated {
       background-color: #ddd;
       color: #333;
     }
 
-    button {
-      border: none;
-      border-radius: 4px;
-      padding: 8px 10px;
-      cursor: pointer;
-      background-color: #ccff00; /* Tennis ball yellow-green */
-      color: #000;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      text-align: center;
-    }
-
-    button.selected {
-      background-color: #a3e635;
-      color: #000;
-      box-shadow: 0 0 10px #fff;
-    }
-
     .summary-controls {
       margin-top: 30px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 15px;
-      border-radius: 10px;
-    }
-
-    .summary-controls h3 {
-      margin-bottom: 10px;
-      text-shadow: 0 0 5px #000;
-    }
-
-    .summary-output {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 1.2em;
-      color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
 
     .button-grid {
@@ -89,47 +95,33 @@
       gap: 10px;
     }
 
-    .button-grid.kids {
-      grid-template-columns: repeat(3, 1fr);
-    }
+    .kids { grid-template-columns: repeat(3, 1fr); }
+    .years { grid-template-columns: repeat(3, 1fr); }
+    .months { grid-template-columns: repeat(3, 1fr); }
 
-    .button-grid.years {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .button-grid.months {
-      grid-template-columns: repeat(3, 1fr);
+    .summary-output {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+      text-align: center;
     }
 
     @media (max-width: 600px) {
-      th, td {
-        padding: 4px;
-        font-size: 12px;
-      }
-
-      button {
-        font-size: 12px;
-        padding: 6px 8px;
-      }
+      h1 { font-size: 1.6em; }
+      button { font-size: 14px; padding: 8px; }
+      .kids, .years, .months { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
   <h1>🎾 Tennis Tracker 🎾</h1>
 
-  <div style="overflow-x: auto;">
-    <table id="trackerTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>V</th>
-          <th>S</th>
-          <th>F</th>
-        </tr>
-      </thead>
-      <tbody id="trackerBody"></tbody>
-    </table>
-  </div>
+  <table id="trackerTable">
+    <thead>
+      <tr><th>Date</th><th>V</th><th>S</th><th>F</th></tr>
+    </thead>
+    <tbody id="trackerBody"></tbody>
+  </table>
   <button onclick="addDateRow()">+ Add Date</button>
 
   <div class="summary-controls">
@@ -144,16 +136,11 @@
 
   <script>
     const kids = ["Valentin", "Sebas", "Felix"];
-    let dates = ["2025-07-02", "2025-07-09", "2025-07-16", "2025-07-23", "2025-07-30",
-                 "2025-08-06", "2025-08-13", "2025-08-20", "2025-08-27",
-                 "2025-09-03", "2025-09-10", "2025-09-17", "2025-09-24",
-                 "2025-10-01", "2025-10-08", "2025-10-15", "2025-10-22", "2025-10-29",
-                 "2025-11-05", "2025-11-12", "2025-11-19", "2025-11-26",
-                 "2025-12-03", "2025-12-10", "2025-12-17", "2025-12-24", "2025-12-31"];
+    let dates = ["2025-07-02", "2025-07-09", "2025-07-16"];
     let participation = JSON.parse(localStorage.getItem("tennis_participation") || "{}");
 
-    let selectedKid = "Valentin";
-    let selectedYear = "2025";
+    let selectedKid = localStorage.getItem("last_kid") || "Valentin";
+    let selectedYear = localStorage.getItem("last_year") || "2025";
     let selectedMonth = null;
 
     function saveData() {
@@ -162,68 +149,68 @@
     }
 
     function addDateRow(value = "") {
-      const tableBody = document.getElementById("trackerBody");
+      const tbody = document.getElementById("trackerBody");
       const tr = document.createElement("tr");
 
-      const dateTd = document.createElement("td");
+      const dateCell = document.createElement("td");
       const input = document.createElement("input");
       input.type = "date";
       input.value = value;
       input.onchange = () => {
-        const allInputs = Array.from(document.querySelectorAll("tbody input[type='date']"));
-        dates = allInputs.map(i => i.value).filter(v => v !== "").sort();
+        dates = Array.from(document.querySelectorAll("tbody input[type='date']"))
+          .map(i => i.value).filter(v => v !== "").sort();
         saveData();
         renderTable();
       };
-      dateTd.appendChild(input);
-      tr.appendChild(dateTd);
+      dateCell.appendChild(input);
+      tr.appendChild(dateCell);
 
       kids.forEach(kid => {
-        const cell = document.createElement("td");
-        const date = value;
-        const participated = participation[date] && participation[date][kid];
+        const td = document.createElement("td");
         const btn = document.createElement("button");
-        btn.className = participated ? "participated" : "not-participated";
-        btn.innerText = participated ? "✔" : "—";
-        btn.onclick = () => toggleParticipation(date, kid);
-        cell.appendChild(btn);
-        tr.appendChild(cell);
+        const date = value;
+        const state = participation[date]?.[kid];
+        btn.innerText = state ? "🟢" : "⚪️";
+        btn.className = state ? "participated" : "not-participated";
+        btn.onclick = () => {
+          participation[date] = participation[date] || {};
+          participation[date][kid] = !participation[date][kid];
+          saveData();
+          renderTable();
+        };
+        td.appendChild(btn);
+        tr.appendChild(td);
       });
 
-      tableBody.appendChild(tr);
-    }
-
-    function toggleParticipation(date, kid) {
-      if (!date) return;
-      participation[date] = participation[date] || {};
-      participation[date][kid] = !participation[date][kid];
-      saveData();
-      renderTable();
+      tbody.appendChild(tr);
     }
 
     function renderTable() {
-      const tableBody = document.getElementById("trackerBody");
-      tableBody.innerHTML = "";
+      const tbody = document.getElementById("trackerBody");
+      tbody.innerHTML = "";
       dates.forEach(date => addDateRow(date));
     }
 
-    function createButtons(containerId, values, stateType) {
+    function createButtons(containerId, values, type) {
       const container = document.getElementById(containerId);
-      values.forEach(value => {
+      container.innerHTML = "";
+      values.forEach(val => {
         const btn = document.createElement("button");
-        btn.innerText = value;
-        if (
-          (stateType === "kid" && value === selectedKid) ||
-          (stateType === "year" && value === selectedYear)
-        ) {
+        btn.innerText = val;
+        if ((type === "kid" && val === selectedKid) || (type === "year" && val === selectedYear))
           btn.classList.add("selected");
-        }
         btn.onclick = () => {
           container.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
           btn.classList.add("selected");
-          if (stateType === "kid") selectedKid = value;
-          if (stateType === "year") selectedYear = value;
-          if (stateType === "month") selectedMonth = value;
+          if (type === "kid") {
+            selectedKid = val;
+            localStorage.setItem("last_kid", val);
+          }
+          if (type === "year") {
+            selectedYear = val;
+            localStorage.setItem("last_year", val);
+          }
+          if (type === "month") selectedMonth = val;
           calculateCost();
         };
         container.appendChild(btn);
@@ -236,32 +223,26 @@
         return;
       }
 
-      const filteredDates = dates.filter(date =>
-        date.startsWith(selectedYear + "-") &&
-        new Date(date).toLocaleString("en-US", { month: "short" }) === selectedMonth
+      const filteredDates = dates.filter(d =>
+        d.startsWith(selectedYear + "-") &&
+        new Date(d).toLocaleString("en-US", { month: "short" }) === selectedMonth
       );
 
-      let sessions = 0;
-      let totalKidsPerSession = 0;
+      let sessions = 0, costSum = 0;
 
       filteredDates.forEach(date => {
-        const dayRecord = participation[date];
-        if (dayRecord && dayRecord[selectedKid]) {
+        const record = participation[date];
+        if (record?.[selectedKid]) {
           sessions++;
-          const kidsThatDay = kids.filter(k => dayRecord[k]).length;
-          let costPerKid = 0;
-          if (kidsThatDay === 1) costPerKid = 15000;
-          else if (kidsThatDay === 2) costPerKid = 12000;
-          else if (kidsThatDay >= 3) costPerKid = 10000;
-          totalKidsPerSession += costPerKid;
+          const count = kids.filter(k => record[k]).length;
+          costSum += count === 1 ? 15000 : count === 2 ? 12000 : 10000;
         }
       });
 
-      const summaryText = `${selectedKid} participated ${sessions}x in ${selectedMonth} ${selectedYear}. Total cost: ₡${totalKidsPerSession}`;
-      document.getElementById("summaryOutput").innerText = summaryText;
+      document.getElementById("summaryOutput").innerText =
+        `${selectedKid} participated ${sessions}x in ${selectedMonth} ${selectedYear}. Total cost: ₡${costSum}`;
     }
 
-    // Initialize
     renderTable();
     createButtons("kidButtons", kids, "kid");
     createButtons("yearButtons", ["2025", "2026", "2027"], "year");
