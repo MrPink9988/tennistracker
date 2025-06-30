@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tennis Tracker</title>
+  <title>Tennis Tracker with Summary</title>
   <style>
     body {
       font-family: sans-serif;
@@ -28,25 +28,31 @@
     button.participated {
       background-color: #4caf50;
       color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 5px;
-      cursor: pointer;
     }
     button.not-participated {
       background-color: #ddd;
       color: #333;
+    }
+    button {
       border: none;
       border-radius: 4px;
-      padding: 5px;
+      padding: 5px 8px;
       cursor: pointer;
+      margin: 2px;
     }
-    .counts {
-      margin-top: 20px;
+    button.selected {
+      background-color: #2196f3 !important;
+      color: white !important;
+    }
+    .summary-controls {
+      margin-top: 30px;
+    }
+    .summary-controls h3 {
+      margin-bottom: 5px;
+    }
+    .summary-output {
+      margin-top: 15px;
       font-weight: bold;
-    }
-    .add-date-button {
-      margin-top: 10px;
     }
     @media (max-width: 600px) {
       th, td {
@@ -55,8 +61,8 @@
         min-width: 50px;
       }
       button {
-        padding: 4px;
         font-size: 12px;
+        padding: 4px 6px;
       }
       table, th, td {
         border: none;
@@ -79,8 +85,17 @@
       <tbody id="trackerBody"></tbody>
     </table>
   </div>
-  <button class="add-date-button" onclick="addDateRow()">+ Add Date</button>
-  <div class="counts" id="counts"></div>
+  <button onclick="addDateRow()">+ Add Date</button>
+
+  <div class="summary-controls">
+    <h3>Select Name</h3>
+    <div id="kidButtons"></div>
+    <h3>Select Year</h3>
+    <div id="yearButtons"></div>
+    <h3>Select Month</h3>
+    <div id="monthButtons"></div>
+    <div class="summary-output" id="summaryOutput">No selection made.</div>
+  </div>
 
   <script>
     const kids = ["Valentin", "Sebas", "Felix"];
@@ -91,6 +106,10 @@
                  "2025-11-05", "2025-11-12", "2025-11-19", "2025-11-26",
                  "2025-12-03", "2025-12-10", "2025-12-17", "2025-12-24", "2025-12-31"];
     let participation = JSON.parse(localStorage.getItem("tennis_participation") || "{}");
+
+    let selectedKid = null;
+    let selectedYear = null;
+    let selectedMonth = null;
 
     function saveData() {
       localStorage.setItem("tennis_dates", JSON.stringify(dates));
@@ -141,32 +160,62 @@
       const tableBody = document.getElementById("trackerBody");
       tableBody.innerHTML = "";
       dates.forEach(date => addDateRow(date));
-      renderCounts();
     }
 
-    function renderCounts() {
-      const counts = {};
-      kids.forEach(kid => (counts[kid] = {}));
-      for (const [date, record] of Object.entries(participation)) {
-        const month = date.slice(0, 7);
-        kids.forEach(kid => {
-          if (record[kid]) {
-            counts[kid][month] = (counts[kid][month] || 0) + 1;
-          }
-        });
+    function createButtons(containerId, values) {
+      const container = document.getElementById(containerId);
+      values.forEach(value => {
+        const btn = document.createElement("button");
+        btn.innerText = value;
+        btn.onclick = () => {
+          const buttons = container.querySelectorAll("button");
+          buttons.forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          if (containerId === "kidButtons") selectedKid = value;
+          if (containerId === "yearButtons") selectedYear = value;
+          if (containerId === "monthButtons") selectedMonth = value;
+          calculateCost();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function calculateCost() {
+      if (!selectedKid || !selectedYear || !selectedMonth) {
+        document.getElementById("summaryOutput").innerText = "Please select name, year, and month.";
+        return;
       }
 
-      const lines = [];
-      for (const kid of kids) {
-        for (const month of Object.keys(counts[kid]).sort()) {
-          lines.push(`${kid} in ${month}: ${counts[kid][month]}x`);
+      const filteredDates = dates.filter(date =>
+        date.startsWith(selectedYear + "-") &&
+        new Date(date).toLocaleString("en-US", { month: "short" }) === selectedMonth
+      );
+
+      let sessions = 0;
+      let totalKidsPerSession = 0;
+
+      filteredDates.forEach(date => {
+        const dayRecord = participation[date];
+        if (dayRecord && dayRecord[selectedKid]) {
+          sessions++;
+          const kidsThatDay = kids.filter(k => dayRecord[k]).length;
+          let costPerKid = 0;
+          if (kidsThatDay === 1) costPerKid = 15000;
+          else if (kidsThatDay === 2) costPerKid = 12000;
+          else if (kidsThatDay >= 3) costPerKid = 10000;
+          totalKidsPerSession += costPerKid;
         }
-      }
-      document.getElementById("counts").innerText = lines.join(" | ");
+      });
+
+      const summaryText = `${selectedKid} participated ${sessions}x in ${selectedMonth} ${selectedYear}. Total cost: ₡${totalKidsPerSession}`;
+      document.getElementById("summaryOutput").innerText = summaryText;
     }
 
-    // Initial load
+    // Init
     renderTable();
+    createButtons("kidButtons", kids);
+    createButtons("yearButtons", ["2025", "2026"]);
+    createButtons("monthButtons", ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
   </script>
 </body>
 </html>
