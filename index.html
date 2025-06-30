@@ -122,7 +122,8 @@
     </thead>
     <tbody id="trackerBody"></tbody>
   </table>
-  <button onclick="addDateRow()">+ Add Date</button>
+
+  <button onclick="addNextWednesday()">+ Add Date</button>
 
   <div class="summary-controls">
     <h3>Select Name</h3>
@@ -146,6 +147,25 @@
     function saveData() {
       localStorage.setItem("tennis_dates", JSON.stringify(dates));
       localStorage.setItem("tennis_participation", JSON.stringify(participation));
+    }
+
+    function addNextWednesday() {
+      let latest = dates.length
+        ? new Date(dates[dates.length - 1])
+        : new Date();
+
+      latest.setDate(latest.getDate() + 1);
+      while (latest.getDay() !== 3) {
+        latest.setDate(latest.getDate() + 1);
+      }
+
+      const iso = latest.toISOString().split("T")[0];
+      if (!dates.includes(iso)) {
+        dates.push(iso);
+        dates.sort();
+        saveData();
+        renderTable();
+      }
     }
 
     function addDateRow(value = "") {
