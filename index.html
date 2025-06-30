@@ -3,75 +3,117 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tennis Tracker with Summary</title>
+  <title>Tennis Tracker</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
-      background: #f5f5f5;
+      margin: 0;
+      background: url('background.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
     }
+
     h1 {
       text-align: center;
+      margin-bottom: 20px;
+      color: #fff;
+      text-shadow: 0 0 10px #000;
     }
+
     table {
       border-collapse: collapse;
       width: 100%;
       margin-top: 20px;
-      overflow-x: auto;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #000;
     }
+
     th, td {
       border: 1px solid #ccc;
       padding: 6px;
       text-align: center;
       min-width: 60px;
     }
+
     button.participated {
       background-color: #4caf50;
       color: white;
     }
+
     button.not-participated {
       background-color: #ddd;
       color: #333;
     }
+
     button {
       border: none;
       border-radius: 4px;
-      padding: 5px 8px;
+      padding: 8px 10px;
       cursor: pointer;
-      margin: 2px;
+      margin: 5px;
+      background-color: #ccff00; /* Tennis ball yellow-green */
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
+
     button.selected {
-      background-color: #2196f3 !important;
-      color: white !important;
+      background-color: #a3e635;
+      color: #000;
+      box-shadow: 0 0 10px #fff;
     }
+
     .summary-controls {
       margin-top: 30px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      border-radius: 10px;
     }
+
     .summary-controls h3 {
-      margin-bottom: 5px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px #000;
     }
+
     .summary-output {
-      margin-top: 15px;
+      margin-top: 20px;
       font-weight: bold;
+      font-size: 1.2em;
+      color: #fff;
     }
+
+    .button-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button-grid.months {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     @media (max-width: 600px) {
       th, td {
         padding: 4px;
         font-size: 12px;
-        min-width: 50px;
       }
+
       button {
         font-size: 12px;
-        padding: 4px 6px;
+        padding: 6px 8px;
       }
-      table, th, td {
-        border: none;
+
+      .button-grid.months {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
   </style>
 </head>
 <body>
   <h1>Tennis Tracker</h1>
+
   <div style="overflow-x: auto;">
     <table id="trackerTable">
       <thead>
@@ -89,11 +131,11 @@
 
   <div class="summary-controls">
     <h3>Select Name</h3>
-    <div id="kidButtons"></div>
+    <div id="kidButtons" class="button-grid"></div>
     <h3>Select Year</h3>
-    <div id="yearButtons"></div>
+    <div id="yearButtons" class="button-grid"></div>
     <h3>Select Month</h3>
-    <div id="monthButtons"></div>
+    <div id="monthButtons" class="button-grid months"></div>
     <div class="summary-output" id="summaryOutput">No selection made.</div>
   </div>
 
@@ -107,8 +149,8 @@
                  "2025-12-03", "2025-12-10", "2025-12-17", "2025-12-24", "2025-12-31"];
     let participation = JSON.parse(localStorage.getItem("tennis_participation") || "{}");
 
-    let selectedKid = null;
-    let selectedYear = null;
+    let selectedKid = "Valentin";
+    let selectedYear = "2025";
     let selectedMonth = null;
 
     function saveData() {
@@ -162,18 +204,23 @@
       dates.forEach(date => addDateRow(date));
     }
 
-    function createButtons(containerId, values) {
+    function createButtons(containerId, values, stateType) {
       const container = document.getElementById(containerId);
       values.forEach(value => {
         const btn = document.createElement("button");
         btn.innerText = value;
-        btn.onclick = () => {
-          const buttons = container.querySelectorAll("button");
-          buttons.forEach(b => b.classList.remove("selected"));
+        if (
+          (stateType === "kid" && value === selectedKid) ||
+          (stateType === "year" && value === selectedYear)
+        ) {
           btn.classList.add("selected");
-          if (containerId === "kidButtons") selectedKid = value;
-          if (containerId === "yearButtons") selectedYear = value;
-          if (containerId === "monthButtons") selectedMonth = value;
+        }
+        btn.onclick = () => {
+          container.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          if (stateType === "kid") selectedKid = value;
+          if (stateType === "year") selectedYear = value;
+          if (stateType === "month") selectedMonth = value;
           calculateCost();
         };
         container.appendChild(btn);
@@ -211,11 +258,11 @@
       document.getElementById("summaryOutput").innerText = summaryText;
     }
 
-    // Init
+    // Initialize
     renderTable();
-    createButtons("kidButtons", kids);
-    createButtons("yearButtons", ["2025", "2026"]);
-    createButtons("monthButtons", ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
+    createButtons("kidButtons", kids, "kid");
+    createButtons("yearButtons", ["2025", "2026"], "year");
+    createButtons("monthButtons", ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "month");
   </script>
 </body>
 </html>
